@@ -1,9 +1,10 @@
 "use client";
 
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { signInWithEmailAndPassword, getAuth } from "firebase/auth";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+
+const auth = getAuth(); // <-- esta linha é essencial
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -13,7 +14,7 @@ export default function Login() {
   const handleLogin = async () => {
     try {
       await signInWithEmailAndPassword(auth, email, senha);
-      router.push("/admin"); // Depois você pode verificar se é admin ou cliente
+      router.push("/admin");
     } catch (error) {
       console.error(error);
       alert("Erro ao logar. Verifique email e senha.");
