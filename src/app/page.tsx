@@ -1,103 +1,166 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import Header from "components/Header";
+import DashboardCard from "components/DashboardCard";
+import ImovelCard from "components/ImovelCard";
+import FiltroImoveis from "components/FiltroImoveis";
+import NavBar from "components/NavBar";
+import FormImovel from "components/FormImovel";
+import { useEffect, useState } from "react";
+
+const imoveisMock = Array.from({ length: 50 }, (_, i) => ({
+  id: i + 1,
+  titulo: `Casa ${i + 1}`,
+  encadta: "30/06/2024",
+  status: i % 2 === 0 ? "ALUGADO" : "DISPONÍVEL",
+  documentos: i % 3 === 0 ? "AVCB, Habite-se" : "OK",
+  administradora: i % 2 === 0 ? "Morada Real" : "Prado Imóveis",
+  imagens: ["/casa1.jpg", "/casa2.jpg", "/casa3.jpg"],
+}));
+
+export default function AdminPage() {
+  const [paginaAtual, setPaginaAtual] = useState("home");
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const hash = window.location.hash.replace("#", "");
+    if (["home", "adicionar", "perfil"].includes(hash)) {
+      setPaginaAtual(hash);
+    }
+  }, []);
+
+  useEffect(() => {
+    window.location.hash = paginaAtual;
+  }, [paginaAtual]);
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <main className="min-h-screen bg-gradient-to-br from-[#0a0e14] to-[#1a2639] text-[#f0f0f0] p-4 pb-24 flex flex-col">
+      <Header className={isScrolled ? "shadow-lg bg-[#0a0e14]/90 backdrop-blur-sm" : ""} />
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      {paginaAtual === "home" && (
+        <div className="space-y-8 mt-6">
+          <FiltroImoveis 
+            onFilter={() => {}} 
+            className="bg-[#161b22]/50 border border-[#30363d] rounded-2xl p-4 backdrop-blur-sm"
+          />
+
+          <section className="space-y-6">
+            <h2 className="text-2xl font-bold text-[#f9d949]">Visão Geral</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <DashboardCard 
+                title="Imóveis Locados" 
+                value={12} 
+                color="from-[#3b82f6] to-[#1d4ed8]" 
+                gradient 
+              />
+              <DashboardCard 
+                title="Contratos Que Vão Encerrar" 
+                value={5} 
+                color="from-[#f59e0b] to-[#d97706]" 
+                gradient 
+              />
+              <DashboardCard 
+                title="Aluguéis Atrasados" 
+                value={3} 
+                color="from-[#ef4444] to-[#dc2626]" 
+                gradient 
+              />
+              <DashboardCard 
+                title="Documentos Faltando" 
+                value={8} 
+                color="from-[#8b5cf6] to-[#7c3aed]" 
+                gradient
+              />
+            </div>
+          </section>
+
+          <section className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold text-[#f9d949]">Imóveis Recentes</h2>
+              <button className="text-sm bg-[#f9d949] text-[#0d1117] px-4 py-2 rounded-lg font-medium hover:bg-[#e6c642] transition-all">
+                Ver Todos
+              </button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {imoveisMock.slice(0, 6).map((imovel) => (
+                <ImovelCard 
+                  key={imovel.id} 
+                  imovel={imovel} 
+                  className="hover:scale-[1.02] transition-transform duration-300"
+                />
+              ))}
+            </div>
+          </section>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+      )}
+
+      {paginaAtual === "adicionar" && (
+        <section className="bg-[#161b22]/80 backdrop-blur-sm border border-[#30363d] p-6 rounded-2xl shadow-2xl max-w-4xl mx-auto w-full mt-8">
+          <div className="flex items-center mb-6 space-x-3">
+            <div className="p-2 bg-[#f9d949]/10 rounded-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-[#f9d949]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold">
+              Adicionar <span className="text-[#f9d949]">Imóvel</span>
+            </h2>
+          </div>
+          <FormImovel />
+        </section>
+      )}
+
+      {paginaAtual === "perfil" && (
+        <section className="bg-[#161b22]/80 backdrop-blur-sm border border-[#30363d] p-8 rounded-2xl shadow-2xl max-w-4xl mx-auto w-full mt-8 text-center">
+          <div className="flex flex-col items-center">
+            <div className="relative mb-6">
+              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#f9d949] to-[#e6c642] flex items-center justify-center">
+                <span className="text-3xl font-bold text-[#0d1117]">JS</span>
+              </div>
+              <button className="absolute bottom-0 right-0 bg-[#30363d] p-2 rounded-full hover:bg-[#f9d949] hover:text-[#0d1117] transition-all">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                </svg>
+              </button>
+            </div>
+            <h2 className="text-2xl font-bold mb-2">John Smith</h2>
+            <p className="text-[#8b949e] mb-6">Administrador</p>
+            
+            <div className="w-full max-w-md space-y-4 text-left">
+              <div className="flex justify-between border-b border-[#30363d] pb-2">
+                <span className="text-[#8b949e]">Email</span>
+                <span>john.smith@example.com</span>
+              </div>
+              <div className="flex justify-between border-b border-[#30363d] pb-2">
+                <span className="text-[#8b949e]">Telefone</span>
+                <span>+55 (11) 98765-4321</span>
+              </div>
+              <div className="flex justify-between border-b border-[#30363d] pb-2">
+                <span className="text-[#8b949e]">Cadastrado em</span>
+                <span>15/03/2022</span>
+              </div>
+            </div>
+            
+            <button className="mt-8 bg-[#f9d949] text-[#0d1117] px-6 py-2 rounded-lg font-medium hover:bg-[#e6c642] transition-all">
+              Editar Perfil
+            </button>
+          </div>
+        </section>
+      )}
+
+      <NavBar 
+        onNavigate={setPaginaAtual} 
+        paginaAtual={paginaAtual} 
+        className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-[#161b22] border border-[#30363d] rounded-full px-4 py-2 shadow-xl"
+      />
+    </main>
   );
 }
