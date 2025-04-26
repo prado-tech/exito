@@ -1,17 +1,15 @@
-// next.config.mjs
-import withPWA from 'next-pwa';
+// import withPWA from 'next-pwa';
 
 const nextConfig = {
   reactStrictMode: true,
   experimental: {
-    serverActions: true,
+    typedRoutes: true,
   },
-  pwa: {
-    dest: 'public',
-    disable: process.env.NODE_ENV === 'development',
-    register: true,
-    skipWaiting: true,
-  },
+  // pwa: {
+  //   dest: 'public',
+  //   disable: process.env.NODE_ENV === 'development',
+  // },
 };
 
-export default withPWA(nextConfig);
+// export default withPWA(nextConfig);
+export default nextConfig;
