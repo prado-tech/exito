@@ -25,7 +25,7 @@ export default function RegisterPage() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center">
       <h1 className="text-3xl font-bold mb-6">Registrar novo usuário</h1>
-      <form onSubmit={handleRegister} className="flex flex-col gap-4 w-80">
+      <form onSubmit={() => {}} className="flex flex-col gap-4 w-80">
         <input
           type="email"
           placeholder="E-mail"
