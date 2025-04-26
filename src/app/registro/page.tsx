@@ -11,16 +11,16 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  async function handleRegister(e: React.FormEvent) {
+  /*async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      //await createUserWithEmailAndPassword(auth, email, password);
       alert("Usuário registrado com sucesso!");
       router.push("/"); // Redireciona para home ou dashboard
     } catch (error: any) {
       alert("Erro ao registrar: " + error.message);
     }
-  }
+  }*/
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center">
