@@ -4,9 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3001",
-    "build": "NODE_OPTIONS='--max-old-space-size=4096' next build",
-    "start": "next start",
-    "build": "next build"
+    "build": "next build",
+    "start": "next start"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.0.0",
@@ -31,6 +30,7 @@
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
     "@types/workbox-webpack-plugin": "^5.1.8",
+    "eslint": "^9.25.1",
     "typescript": "^5"
   }
 }
