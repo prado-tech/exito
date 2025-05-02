@@ -2,7 +2,11 @@
 "use client";
 
 import { useState } from "react";
+<<<<<<< HEAD
 //import { auth } from "../../lib/firebase";
+=======
+import { auth } from "@/app/lib/supabase";
+>>>>>>> 872a65c (feat: adiciona carrossel de imagens no card de imóvel)
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { useRouter } from "next/navigation";
 

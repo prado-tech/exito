@@ -1,103 +1,135 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
+import { useState } from "react"
+import { v4 as uuidv4 } from "uuid"
+import { supabase } from "@/app/lib/supabase"
 
-export default function FormImovel() {
-  const [titulo, setTitulo] = useState("");
-  const [descricao, setDescricao] = useState("");
-  const [fotos, setFotos] = useState<File[]>([]);
-  const [documentos, setDocumentos] = useState<File[]>([]);
-  const [previewFotos, setPreviewFotos] = useState<string[]>([]);
+interface FormImovelProps {
+  onSuccess?: () => void;
+}
 
-  useEffect(() => {
-    const urls = fotos.map((file) => URL.createObjectURL(file));
-    setPreviewFotos(urls);
+export default function FormImovel({ onSuccess }: FormImovelProps) {
+  const [titulo, setTitulo] = useState("")
+  const [descricao, setDescricao] = useState("")
+  const [valor, setValor] = useState("")
+  const [endereco, setEndereco] = useState("")
+  const [fotos, setFotos] = useState<FileList | null>(null)
+  const [carregando, setCarregando] = useState(false)
+  const [sucesso, setSucesso] = useState(false)
 
-    return () => {
-      urls.forEach((url) => URL.revokeObjectURL(url));
-    };
-  }, [fotos]);
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!fotos || fotos.length === 0) return alert("Adicione ao menos uma foto.")
+    setCarregando(true)
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+    try {
+      // Upload de cada imagem para o Supabase Storage
+      const fotoURLs = await Promise.all(
+        Array.from(fotos).map(async (foto) => {
+          const nomeArquivo = `${Date.now()}-${foto.name}`
+          const { data, error } = await supabase.storage
+            .from('imoveis')
+            .upload(nomeArquivo, foto, { upsert: true });
+          
+          if (error) {
+              console.error('Erro detalhado:', JSON.stringify(error, null, 2));
+              throw error;
+          }
 
-    // Aqui você pode integrar com Firebase ou API
-    console.log({ titulo, descricao, fotos, documentos });
-    alert("Imóvel cadastrado!");
-  };
+          // Obter URL pública da imagem
+          const { data: { publicUrl } } = supabase.storage
+            .from('imoveis')
+            .getPublicUrl(nomeArquivo)
+          
+          return publicUrl
+        })
+      )
+
+      // Inserir dados na tabela 'imoveis' no Supabase
+      const { data, error } = await supabase
+        .from('imoveis')
+        .insert({
+          titulo,
+          descricao,
+          valor: parseFloat(valor),
+          endereco,
+          fotos: fotoURLs,
+          //status: 'DISPONÍVEL'
+        })
+        .select()
+
+      if (error) throw error
+
+      setSucesso(true)
+      setTitulo("")
+      setDescricao("")
+      setValor("")
+      setEndereco("")
+      setFotos(null)
+      
+      if (onSuccess) onSuccess();
+    } catch (error) {
+      console.error("Erro ao salvar imóvel:", JSON.stringify(error, null, 2))
+      alert("Erro ao salvar. Veja o console.")
+    }
+
+    setCarregando(false)
+  }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label className="block font-semibold mb-1">Título do Imóvel</label>
-        <input
-          type="text"
-          value={titulo}
-          onChange={(e) => setTitulo(e.target.value)}
-          className="w-full bg-[#161b22] border border-[#2a2f38] rounded-lg p-2 text-white"
-        />
-      </div>
+    <form onSubmit={handleSubmit} className="p-4 space-y-4 max-w-xl mx-auto">
+      <input
+        type="text"
+        placeholder="Título"
+        value={titulo}
+        onChange={(e) => setTitulo(e.target.value)}
+        required
+        className="w-full border p-2 rounded"
+      />
 
-      <div>
-        <label className="block font-semibold mb-1">Descrição</label>
-        <textarea
-          value={descricao}
-          onChange={(e) => setDescricao(e.target.value)}
-          className="w-full bg-[#161b22] border border-[#2a2f38] rounded-lg p-2 text-white"
-        />
-      </div>
+      <textarea
+        placeholder="Descrição"
+        value={descricao}
+        onChange={(e) => setDescricao(e.target.value)}
+        required
+        className="w-full border p-2 rounded"
+      />
 
-      <div>
-        <label className="block font-semibold mb-1">Fotos do Imóvel</label>
-        <input
-          type="file"
-          accept="image/*"
-          multiple
-          onChange={(e) => {
-            if (e.target.files) {
-              setFotos(Array.from(e.target.files));
-            }
-          }}
-          className="text-white"
-        />
-        <div className="flex gap-2 mt-2">
-          {previewFotos.map((url, index) => (
-            <img
-              key={index}
-              src={url}
-              alt={`preview-${index}`}
-              className="w-20 h-20 object-cover rounded"
-            />
-          ))}
-        </div>
-      </div>
+      <input
+        type="text"
+        placeholder="Endereço"
+        value={endereco}
+        onChange={(e) => setEndereco(e.target.value)}
+        required
+        className="w-full border p-2 rounded"
+      />
 
-      <div>
-        <label className="block font-semibold mb-1">Documentos (PDF, Excel)</label>
-        <input
-          type="file"
-          accept=".pdf,.xlsx,.xls"
-          multiple
-          onChange={(e) => {
-            if (e.target.files) {
-              setDocumentos(Array.from(e.target.files));
-            }
-          }}
-          className="text-white"
-        />
-        <ul className="list-disc list-inside text-sm mt-2">
-          {documentos.map((doc, index) => (
-            <li key={index}>{doc.name}</li>
-          ))}
-        </ul>
-      </div>
+      <input
+        type="number"
+        placeholder="Valor"
+        value={valor}
+        onChange={(e) => setValor(e.target.value)}
+        required
+        className="w-full border p-2 rounded"
+      />
+
+      <input
+        type="file"
+        accept="image/*"
+        multiple
+        onChange={(e) => setFotos(e.target.files)}
+        className="w-full"
+      />
 
       <button
         type="submit"
-        className="bg-[#f9d949] text-[#0d1117] px-4 py-2 rounded-lg font-semibold"
+        disabled={carregando}
+        className="bg-blue-600 text-white px-4 py-2 rounded"
       >
-        Cadastrar Imóvel
+        {carregando ? "Salvando..." : "Cadastrar Imóvel"}
       </button>
+
+      {sucesso && <p className="text-green-600">Imóvel cadastrado com sucesso!</p>}
     </form>
-  );
+  )
 }

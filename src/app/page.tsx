@@ -7,20 +7,34 @@ import FiltroImoveis from "components/FiltroImoveis";
 import NavBar from "components/NavBar";
 import FormImovel from "components/FormImovel";
 import { useEffect, useState } from "react";
+import { createClient } from '@supabase/supabase-js';
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 
-const imoveisMock = Array.from({ length: 50 }, (_, i) => ({
-  id: i + 1,
-  titulo: `Casa ${i + 1}`,
-  encadta: "30/06/2024",
-  status: i % 2 === 0 ? "ALUGADO" : "DISPONÍVEL",
-  documentos: i % 3 === 0 ? "AVCB, Habite-se" : "OK",
-  administradora: i % 2 === 0 ? "Morada Real" : "Prado Imóveis",
-  imagens: ["/casa1.jpg", "/casa2.jpg", "/casa3.jpg"],
-}));
+
+// Configuração do Supabase
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://ykknbbyefgltqnlkfqsb.supabase.co';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlra25iYnllZmdsdHFubGtmcXNiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYxMjIxNjIsImV4cCI6MjA2MTY5ODE2Mn0.x4anLheMwHfadi_FTSKUgG1eb7o85-8fpCZm9qbQgHc';
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export default function AdminPage() {
   const [paginaAtual, setPaginaAtual] = useState("home");
+  const [imoveis, setImoveis] = useState<any[]>([]);
   const [isScrolled, setIsScrolled] = useState(false);
+
+  // Carrega os imóveis do Supabase
+  const carregarImoveis = async () => {
+    const { data, error } = await supabase
+      .from('imoveis')
+      .select('*');
+    
+    if (error) {
+      console.error('Erro ao carregar imóveis:', error);
+      return;
+    }
+    
+    setImoveis(data || []);
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -41,6 +55,24 @@ export default function AdminPage() {
     window.location.hash = paginaAtual;
   }, [paginaAtual]);
 
+  useEffect(() => {
+    carregarImoveis();
+
+    // Configura subscription para atualizações em tempo real
+    const subscription = supabase
+      .channel('imoveis-channel')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'imoveis' },
+        () => carregarImoveis()
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(subscription);
+    };
+  }, []);
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-[#0a0e14] to-[#1a2639] text-[#f0f0f0] p-4 pb-24 flex flex-col">
       <Header className={isScrolled ? "shadow-lg bg-[#0a0e14]/90 backdrop-blur-sm" : ""} />
@@ -57,7 +89,7 @@ export default function AdminPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <DashboardCard 
                 title="Imóveis Locados" 
-                value={12} 
+                value={imoveis.filter(i => i.status === 'ALUGADO').length} 
                 color="from-[#3b82f6] to-[#1d4ed8]" 
                 gradient 
               />
@@ -90,7 +122,7 @@ export default function AdminPage() {
               </button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {imoveisMock.slice(0, 6).map((imovel) => (
+              {imoveis.slice(0, 6).map((imovel) => (
                 <ImovelCard 
                   key={imovel.id} 
                   imovel={imovel} 
@@ -114,7 +146,7 @@ export default function AdminPage() {
               Adicionar <span className="text-[#f9d949]">Imóvel</span>
             </h2>
           </div>
-          <FormImovel />
+          <FormImovel onSuccess={carregarImoveis} />
         </section>
       )}
 
