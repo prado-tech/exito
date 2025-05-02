@@ -8,6 +8,7 @@ import NavBar from "components/NavBar";
 import FormImovel from "components/FormImovel";
 import { useEffect, useState } from "react";
 import { createClient } from '@supabase/supabase-js';
+import { db, auth } from '@/app/lib/supabase';  // Garantindo o caminho correto
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
