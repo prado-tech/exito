@@ -19,7 +19,7 @@ export default function Header({ className = "" }) {
           </button>
           
           <div className="h-8 w-8 rounded-full bg-[#f9d949] flex items-center justify-center">
-            <span className="text-sm font-bold text-[#0d1117]">JS</span>
+            <span className="text-sm font-bold text-[#0d1117]">EX</span>
           </div>
         </div>
       </div>
