@@ -2,34 +2,39 @@
 "use client";
 
 import { useState } from "react";
-<<<<<<< HEAD
-//import { auth } from "../../lib/firebase";
-=======
-import { auth } from "@/app/lib/supabase";
->>>>>>> 872a65c (feat: adiciona carrossel de imagens no card de imóvel)
-import { createUserWithEmailAndPassword } from "firebase/auth";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/app/lib/supabase"; // Certifique-se de que o caminho está correto
 
 export default function RegisterPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  /*async function handleRegister(e: React.FormEvent) {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+
     try {
-      //await createUserWithEmailAndPassword(auth, email, password);
+      // Usando o Supabase para registrar o usuário
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+
+      if (error) {
+        throw error;
+      }
+
       alert("Usuário registrado com sucesso!");
       router.push("/"); // Redireciona para home ou dashboard
     } catch (error: any) {
       alert("Erro ao registrar: " + error.message);
     }
-  }*/
+  };
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center">
       <h1 className="text-3xl font-bold mb-6">Registrar novo usuário</h1>
-      <form onSubmit={() => {}} className="flex flex-col gap-4 w-80">
+      <form onSubmit={handleRegister} className="flex flex-col gap-4 w-80">
         <input
           type="email"
           placeholder="E-mail"

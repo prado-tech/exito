@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
-import { doc, getDoc } from "firebase/firestore"
-import { db } from "@/app/lib/supabase"
+import { supabase } from "@/app/lib/supabase" // Certifique-se de importar o cliente do Supabase corretamente
 import { Swiper, SwiperSlide } from "swiper/react"
 import "swiper/css"
 import "swiper/css/navigation"
@@ -26,10 +25,17 @@ export default function PaginaDetalhesImovel() {
     if (!id) return
 
     const carregarImovel = async () => {
-      const docRef = doc(db, "imoveis", id as string)
-      const snap = await getDoc(docRef)
-      if (snap.exists()) {
-        setImovel(snap.data() as Imovel)
+      // Usando Supabase para pegar os dados
+      const { data, error } = await supabase
+        .from('imoveis')
+        .select('*')
+        .eq('id', id) // Supondo que a coluna 'id' seja o identificador único
+        .single() // Retorna um único registro
+
+      if (error) {
+        console.error("Erro ao carregar imóvel:", error)
+      } else {
+        setImovel(data as Imovel)
       }
     }
 
