@@ -2,39 +2,30 @@
 "use client";
 
 import { useState } from "react";
+import { auth } from "@/app/lib/supabase";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/app/lib/supabase"; // Certifique-se de que o caminho está correto
 
 export default function RegisterPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleRegister = async (e: React.FormEvent) => {
+  /*async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
-
     try {
-      // Usando o Supabase para registrar o usuário
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-      });
-
-      if (error) {
-        throw error;
-      }
-
+      //await createUserWithEmailAndPassword(auth, email, password);
       alert("Usuário registrado com sucesso!");
       router.push("/"); // Redireciona para home ou dashboard
     } catch (error: any) {
       alert("Erro ao registrar: " + error.message);
     }
-  };
+  }*/
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center">
       <h1 className="text-3xl font-bold mb-6">Registrar novo usuário</h1>
-      <form onSubmit={handleRegister} className="flex flex-col gap-4 w-80">
+      <form onSubmit={() => {}} className="flex flex-col gap-4 w-80">
         <input
           type="email"
           placeholder="E-mail"
